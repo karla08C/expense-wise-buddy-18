@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as DespesasRouteImport } from './routes/despesas'
 import { Route as IndexRouteImport } from './routes/index'
 
+const OrcamentoRoute = OrcamentoRouteImport.update({
+  id: '/orcamento',
+  path: '/orcamento',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DespesasRoute = DespesasRouteImport.update({
   id: '/despesas',
   path: '/despesas',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/despesas': typeof DespesasRoute
+  '/orcamento': typeof OrcamentoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/despesas': typeof DespesasRoute
+  '/orcamento': typeof OrcamentoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/despesas': typeof DespesasRoute
+  '/orcamento': typeof OrcamentoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/despesas'
+  fullPaths: '/' | '/despesas' | '/orcamento'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/despesas'
-  id: '__root__' | '/' | '/despesas'
+  to: '/' | '/despesas' | '/orcamento'
+  id: '__root__' | '/' | '/despesas' | '/orcamento'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DespesasRoute: typeof DespesasRoute
+  OrcamentoRoute: typeof OrcamentoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/orcamento': {
+      id: '/orcamento'
+      path: '/orcamento'
+      fullPath: '/orcamento'
+      preLoaderRoute: typeof OrcamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/despesas': {
       id: '/despesas'
       path: '/despesas'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DespesasRoute: DespesasRoute,
+  OrcamentoRoute: OrcamentoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
