@@ -70,6 +70,36 @@ export const PAYMENT_METHODS = [
   "Boleto",
 ];
 
+export type IncomeCategory =
+  | "Salário"
+  | "Freelance"
+  | "Vendas"
+  | "Aluguel recebido"
+  | "Rendimentos"
+  | "Reembolso"
+  | "Presente"
+  | "Outros";
+
+export const INCOME_CATEGORIES: IncomeCategory[] = [
+  "Salário",
+  "Freelance",
+  "Vendas",
+  "Aluguel recebido",
+  "Rendimentos",
+  "Reembolso",
+  "Presente",
+  "Outros",
+];
+
+export type Income = {
+  id: string;
+  date: string;
+  description: string;
+  category: IncomeCategory;
+  source: string;
+  amount: number;
+};
+
 export const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
