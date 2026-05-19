@@ -80,3 +80,28 @@ export function useBudgets() {
 
   return { budgets, setBudgets };
 }
+
+export function useIncomes() {
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(INCOMES_KEY);
+    if (stored) setIncomes(JSON.parse(stored));
+    else {
+      setIncomes(seedIncomes);
+      window.localStorage.setItem(INCOMES_KEY, JSON.stringify(seedIncomes));
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) window.localStorage.setItem(INCOMES_KEY, JSON.stringify(incomes));
+  }, [incomes, hydrated]);
+
+  const add = (i: Omit<Income, "id">) =>
+    setIncomes((prev) => [{ ...i, id: crypto.randomUUID() }, ...prev]);
+  const remove = (id: string) => setIncomes((prev) => prev.filter((i) => i.id !== id));
+
+  return { incomes, add, remove, hydrated };
+}
