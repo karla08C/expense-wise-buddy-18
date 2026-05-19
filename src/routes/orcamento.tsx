@@ -3,8 +3,11 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useExpenses, useBudgets } from "@/lib/storage";
-import { CATEGORIES, formatBRL, monthLabel, type Category } from "@/lib/finance";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2 } from "lucide-react";
+import { useState as useStateLocal } from "react";
+import { useExpenses, useBudgets, useCategories, useIncomeCategories } from "@/lib/storage";
+import { formatBRL, monthLabel, type Category } from "@/lib/finance";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/orcamento")({
