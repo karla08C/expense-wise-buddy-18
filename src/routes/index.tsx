@@ -32,6 +32,7 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const { expenses, hydrated } = useExpenses();
+  const { incomes } = useIncomes();
   const { budgets } = useBudgets();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
