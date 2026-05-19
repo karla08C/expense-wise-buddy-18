@@ -78,6 +78,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Gerencie despesas pessoais ou do seu negócio com gráficos, orçamento e guia de investimentos." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "FinControl — Despesas & Investimentos" },
+      { name: "twitter:description", content: "Gerencie despesas pessoais ou do seu negócio com gráficos, orçamento e guia de investimentos." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d47d1561-2a3d-4ced-b5d9-661c83a3c05f/id-preview-fac5682a--a3c74eca-6968-4011-bb54-4a0fb21d42a1.lovable.app-1779206916474.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d47d1561-2a3d-4ced-b5d9-661c83a3c05f/id-preview-fac5682a--a3c74eca-6968-4011-bb54-4a0fb21d42a1.lovable.app-1779206916474.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
