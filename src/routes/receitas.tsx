@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
-import { useIncomes } from "@/lib/storage";
-import { INCOME_CATEGORIES, formatBRL, type IncomeCategory } from "@/lib/finance";
+import { useIncomes, useIncomeCategories } from "@/lib/storage";
+import { formatBRL, type IncomeCategory } from "@/lib/finance";
 
 export const Route = createFileRoute("/receitas")({
   head: () => ({
