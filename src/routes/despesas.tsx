@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
 import { useExpenses } from "@/lib/storage";
-import { CATEGORIES, PAYMENT_METHODS, formatBRL, type Category } from "@/lib/finance";
+import { useCategories } from "@/lib/storage";
+import { PAYMENT_METHODS, formatBRL, type Category } from "@/lib/finance";
 
 export const Route = createFileRoute("/despesas")({
   head: () => ({
