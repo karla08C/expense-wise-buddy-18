@@ -23,11 +23,16 @@ export const Route = createFileRoute("/orcamento")({
 function OrcamentoPage() {
   const { expenses } = useExpenses();
   const { budgets, setBudgets } = useBudgets();
+  const expCats = useCategories();
+  const incCats = useIncomeCategories();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [newExpCat, setNewExpCat] = useStateLocal("");
+  const [newIncCat, setNewIncCat] = useStateLocal("");
 
-  const rows = CATEGORIES.map((cat) => {
+  type Row = { cat: string; spent: number; budget: number; pct: number };
+  const rows: Row[] = expCats.all.map((cat) => {
     const spent = expenses
       .filter((e) => {
         const d = new Date(e.date);
@@ -39,8 +44,8 @@ function OrcamentoPage() {
     return { cat, spent, budget, pct };
   });
 
-  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
-  const totalBudget = rows.reduce((s, r) => s + r.budget, 0);
+  const totalSpent = rows.reduce((s: number, r: Row) => s + r.spent, 0);
+  const totalBudget = rows.reduce((s: number, r: Row) => s + r.budget, 0);
   const totalPct = totalBudget > 0 ? totalSpent / totalBudget : 0;
 
   const updateBudget = (cat: Category, value: string) => {
