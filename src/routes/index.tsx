@@ -69,11 +69,11 @@ function Dashboard() {
     .reduce((s, e) => s + e.amount, 0);
   const delta = lastMonthTotal === 0 ? 0 : ((totalMonth - lastMonthTotal) / lastMonthTotal) * 100;
 
+  const yearIncomes = incomes.filter((i) => new Date(i.date).getFullYear() === year);
   const monthlyTotals = Array.from({ length: 12 }, (_, m) => {
-    const total = yearExpenses
-      .filter((e) => new Date(e.date).getMonth() === m)
-      .reduce((s, e) => s + e.amount, 0);
-    return { month: monthLabel(m), total };
+    const despesas = yearExpenses.filter((e) => new Date(e.date).getMonth() === m).reduce((s, e) => s + e.amount, 0);
+    const receitas = yearIncomes.filter((i) => new Date(i.date).getMonth() === m).reduce((s, i) => s + i.amount, 0);
+    return { month: monthLabel(m), despesas, receitas, saldo: receitas - despesas };
   });
 
   const byCategory = CATEGORIES.map((cat) => ({
