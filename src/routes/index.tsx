@@ -17,8 +17,8 @@ import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PiggyBank, Wallet, ArrowDownCircle, Scale } from "lucide-react";
-import { useExpenses, useBudgets, useIncomes } from "@/lib/storage";
-import { CATEGORIES, formatBRL, monthLabel } from "@/lib/finance";
+import { useExpenses, useBudgets, useIncomes, useCategories } from "@/lib/storage";
+import { formatBRL, monthLabel } from "@/lib/finance";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,6 +33,7 @@ export const Route = createFileRoute("/")({
 function Dashboard() {
   const { expenses, hydrated } = useExpenses();
   const { incomes } = useIncomes();
+  const { all: CATEGORIES } = useCategories();
   const { budgets } = useBudgets();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -69,11 +70,11 @@ function Dashboard() {
     .reduce((s, e) => s + e.amount, 0);
   const delta = lastMonthTotal === 0 ? 0 : ((totalMonth - lastMonthTotal) / lastMonthTotal) * 100;
 
+  const yearIncomes = incomes.filter((i) => new Date(i.date).getFullYear() === year);
   const monthlyTotals = Array.from({ length: 12 }, (_, m) => {
-    const total = yearExpenses
-      .filter((e) => new Date(e.date).getMonth() === m)
-      .reduce((s, e) => s + e.amount, 0);
-    return { month: monthLabel(m), total };
+    const despesas = yearExpenses.filter((e) => new Date(e.date).getMonth() === m).reduce((s, e) => s + e.amount, 0);
+    const receitas = yearIncomes.filter((i) => new Date(i.date).getMonth() === m).reduce((s, i) => s + i.amount, 0);
+    return { month: monthLabel(m), despesas, receitas, saldo: receitas - despesas };
   });
 
   const byCategory = CATEGORIES.map((cat) => ({
@@ -147,7 +148,7 @@ function Dashboard() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Despesas mensais — {year}</CardTitle>
+              <CardTitle>Receitas vs Despesas — {year}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-72">
@@ -160,7 +161,9 @@ function Dashboard() {
                       contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
                       formatter={(v: number) => formatBRL(v)}
                     />
-                    <Bar dataKey="total" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <Bar dataKey="receitas" name="Receitas" fill="var(--success)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="despesas" name="Despesas" fill="var(--destructive)" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -179,7 +182,7 @@ function Dashboard() {
                   <ResponsiveContainer>
                     <PieChart>
                       <Pie data={byCategory} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
-                        {byCategory.map((_, i) => (
+                        {byCategory.map((_entry, i) => (
                           <Cell key={i} fill={`var(--${chartColors[i % chartColors.length]})`} />
                         ))}
                       </Pie>

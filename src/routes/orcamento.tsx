@@ -3,8 +3,11 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useExpenses, useBudgets } from "@/lib/storage";
-import { CATEGORIES, formatBRL, monthLabel, type Category } from "@/lib/finance";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2 } from "lucide-react";
+import { useState as useStateLocal } from "react";
+import { useExpenses, useBudgets, useCategories, useIncomeCategories } from "@/lib/storage";
+import { formatBRL, monthLabel, type Category } from "@/lib/finance";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/orcamento")({
@@ -20,11 +23,16 @@ export const Route = createFileRoute("/orcamento")({
 function OrcamentoPage() {
   const { expenses } = useExpenses();
   const { budgets, setBudgets } = useBudgets();
+  const expCats = useCategories();
+  const incCats = useIncomeCategories();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [newExpCat, setNewExpCat] = useStateLocal("");
+  const [newIncCat, setNewIncCat] = useStateLocal("");
 
-  const rows = CATEGORIES.map((cat) => {
+  type Row = { cat: string; spent: number; budget: number; pct: number };
+  const rows: Row[] = expCats.all.map((cat) => {
     const spent = expenses
       .filter((e) => {
         const d = new Date(e.date);
@@ -36,8 +44,8 @@ function OrcamentoPage() {
     return { cat, spent, budget, pct };
   });
 
-  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
-  const totalBudget = rows.reduce((s, r) => s + r.budget, 0);
+  const totalSpent = rows.reduce((s: number, r: Row) => s + r.spent, 0);
+  const totalBudget = rows.reduce((s: number, r: Row) => s + r.budget, 0);
   const totalPct = totalBudget > 0 ? totalSpent / totalBudget : 0;
 
   const updateBudget = (cat: Category, value: string) => {
@@ -84,9 +92,21 @@ function OrcamentoPage() {
           <CardHeader><CardTitle>Por categoria</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-5">
-              {rows.map((r) => (
+              {rows.map((r: Row) => (
                 <div key={r.cat} className="grid grid-cols-12 gap-3 items-center">
-                  <div className="col-span-12 md:col-span-3 font-medium">{r.cat}</div>
+                  <div className="col-span-12 md:col-span-3 font-medium flex items-center gap-2">
+                    {r.cat}
+                    {expCats.isCustom(r.cat) && (
+                      <button
+                        onClick={() => expCats.remove(r.cat)}
+                        className="text-muted-foreground hover:text-destructive"
+                        aria-label="Remover categoria"
+                        title="Remover categoria customizada"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
                   <div className="col-span-7 md:col-span-6">
                     <ProgressBar pct={r.pct} />
                     <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
@@ -107,6 +127,57 @@ function OrcamentoPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Gerenciar categorias</CardTitle></CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <div className="text-sm font-medium mb-2">Categorias de despesas</div>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {expCats.all.map((c) => (
+                  <span key={c} className="inline-flex items-center gap-1.5 rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs">
+                    {c}
+                    {expCats.isCustom(c) && (
+                      <button onClick={() => expCats.remove(c)} aria-label={`Remover ${c}`}>
+                        <Trash2 className="size-3" />
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+              <form
+                onSubmit={(e) => { e.preventDefault(); expCats.add(newExpCat); setNewExpCat(""); }}
+                className="flex gap-2"
+              >
+                <Input placeholder="Nova categoria de despesa" value={newExpCat} onChange={(e) => setNewExpCat(e.target.value)} />
+                <Button type="submit" size="sm"><Plus className="size-4" />Adicionar</Button>
+              </form>
+            </div>
+
+            <div>
+              <div className="text-sm font-medium mb-2">Categorias de receitas</div>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {incCats.all.map((c) => (
+                  <span key={c} className="inline-flex items-center gap-1.5 rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs">
+                    {c}
+                    {incCats.isCustom(c) && (
+                      <button onClick={() => incCats.remove(c)} aria-label={`Remover ${c}`}>
+                        <Trash2 className="size-3" />
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+              <form
+                onSubmit={(e) => { e.preventDefault(); incCats.add(newIncCat); setNewIncCat(""); }}
+                className="flex gap-2"
+              >
+                <Input placeholder="Nova categoria de receita" value={newIncCat} onChange={(e) => setNewIncCat(e.target.value)} />
+                <Button type="submit" size="sm"><Plus className="size-4" />Adicionar</Button>
+              </form>
             </div>
           </CardContent>
         </Card>

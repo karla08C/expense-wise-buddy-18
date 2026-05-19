@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Budgets, Expense, Income } from "./finance";
-import { DEFAULT_BUDGETS } from "./finance";
+import { DEFAULT_BUDGETS, DEFAULT_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from "./finance";
 
 const EXPENSES_KEY = "fc.expenses.v1";
 const BUDGETS_KEY = "fc.budgets.v1";
 const INCOMES_KEY = "fc.incomes.v1";
+const CUSTOM_CAT_KEY = "fc.customCategories.v1";
+const CUSTOM_INC_CAT_KEY = "fc.customIncomeCategories.v1";
 
 const seedIncomes: Income[] = [
   { id: "i1", date: "2025-05-05", description: "Salário mensal", category: "Salário", source: "Empresa", amount: 5200 },
@@ -104,4 +106,37 @@ export function useIncomes() {
   const remove = (id: string) => setIncomes((prev) => prev.filter((i) => i.id !== id));
 
   return { incomes, add, remove, hydrated };
+}
+
+function useStringList(key: string, defaults: string[]) {
+  const [custom, setCustom] = useState<string[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setCustom(read<string[]>(key, []));
+    setHydrated(true);
+  }, [key]);
+
+  useEffect(() => {
+    if (hydrated) window.localStorage.setItem(key, JSON.stringify(custom));
+  }, [custom, hydrated, key]);
+
+  const all = Array.from(new Set([...defaults, ...custom]));
+  const add = (name: string) => {
+    const n = name.trim();
+    if (!n || all.includes(n)) return;
+    setCustom((p) => [...p, n]);
+  };
+  const remove = (name: string) => setCustom((p) => p.filter((c) => c !== name));
+  const isCustom = (name: string) => custom.includes(name);
+
+  return { all, custom, add, remove, isCustom };
+}
+
+export function useCategories() {
+  return useStringList(CUSTOM_CAT_KEY, DEFAULT_CATEGORIES);
+}
+
+export function useIncomeCategories() {
+  return useStringList(CUSTOM_INC_CAT_KEY, DEFAULT_INCOME_CATEGORIES);
 }
