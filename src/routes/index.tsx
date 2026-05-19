@@ -89,7 +89,7 @@ function Dashboard() {
     { label: "Saldo do mês", value: formatBRL(balance), icon: Scale, hint: balance >= 0 ? "Sobrou" : "Negativo" },
     { label: "Investido no mês", value: formatBRL(invested), icon: PiggyBank, hint: `vs. mês anterior ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}%` },
   ];
-  void ArrowUpRight; void ArrowDownRight; void ListChecks; void TrendingUp;
+  
 
   if (!hydrated) return <AppShell><div className="p-8" /></AppShell>;
 
