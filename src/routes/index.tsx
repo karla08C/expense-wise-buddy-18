@@ -17,8 +17,8 @@ import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PiggyBank, Wallet, ArrowDownCircle, Scale } from "lucide-react";
-import { useExpenses, useBudgets, useIncomes } from "@/lib/storage";
-import { CATEGORIES, formatBRL, monthLabel } from "@/lib/finance";
+import { useExpenses, useBudgets, useIncomes, useCategories } from "@/lib/storage";
+import { formatBRL, monthLabel } from "@/lib/finance";
 
 export const Route = createFileRoute("/")({
   head: () => ({
