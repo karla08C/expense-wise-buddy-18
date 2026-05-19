@@ -1,9 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Receipt, TrendingUp, Wallet } from "lucide-react";
+import { ArrowDownCircle, LayoutDashboard, Receipt, TrendingUp, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/receitas", label: "Receitas", icon: ArrowDownCircle },
   { to: "/despesas", label: "Despesas", icon: Receipt },
   { to: "/orcamento", label: "Orçamento", icon: Wallet },
   { to: "/investimentos", label: "Investimentos", icon: TrendingUp },
