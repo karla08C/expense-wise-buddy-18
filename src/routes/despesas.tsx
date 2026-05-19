@@ -22,6 +22,7 @@ export const Route = createFileRoute("/despesas")({
 
 function DespesasPage() {
   const { expenses, add, remove } = useExpenses();
+  const { all: CATEGORIES } = useCategories();
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<Category>("Alimentação");
