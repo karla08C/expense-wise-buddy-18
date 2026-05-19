@@ -21,6 +21,7 @@ export const Route = createFileRoute("/receitas")({
 
 function ReceitasPage() {
   const { incomes, add, remove } = useIncomes();
+  const { all: INCOME_CATEGORIES } = useIncomeCategories();
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<IncomeCategory>("Salário");
