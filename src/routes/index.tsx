@@ -182,7 +182,7 @@ function Dashboard() {
                   <ResponsiveContainer>
                     <PieChart>
                       <Pie data={byCategory} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
-                        {byCategory.map((_, i) => (
+                        {byCategory.map((_entry, i) => (
                           <Cell key={i} fill={`var(--${chartColors[i % chartColors.length]})`} />
                         ))}
                       </Pie>
