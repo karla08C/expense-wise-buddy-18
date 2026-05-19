@@ -147,7 +147,7 @@ function Dashboard() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Despesas mensais — {year}</CardTitle>
+              <CardTitle>Receitas vs Despesas — {year}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-72">
@@ -160,7 +160,9 @@ function Dashboard() {
                       contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
                       formatter={(v: number) => formatBRL(v)}
                     />
-                    <Bar dataKey="total" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <Bar dataKey="receitas" name="Receitas" fill="var(--success)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="despesas" name="Despesas" fill="var(--destructive)" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
