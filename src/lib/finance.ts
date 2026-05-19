@@ -1,16 +1,7 @@
-export type Category =
-  | "Alimentação"
-  | "Transporte"
-  | "Moradia"
-  | "Lazer"
-  | "Saúde"
-  | "Educação"
-  | "Vestuário"
-  | "Contas"
-  | "Investimentos"
-  | "Outros";
+// Categorias são strings livres: defaults + customizadas pelo usuário
+export type Category = string;
 
-export const CATEGORIES: Category[] = [
+export const DEFAULT_CATEGORIES: Category[] = [
   "Alimentação",
   "Transporte",
   "Moradia",
@@ -23,29 +14,19 @@ export const CATEGORIES: Category[] = [
   "Outros",
 ];
 
-export const CATEGORY_COLORS: Record<Category, string> = {
-  "Alimentação": "var(--chart-1)",
-  "Transporte": "var(--chart-2)",
-  "Moradia": "var(--chart-3)",
-  "Lazer": "var(--chart-4)",
-  "Saúde": "var(--chart-5)",
-  "Educação": "var(--chart-6)",
-  "Vestuário": "var(--chart-7)",
-  "Contas": "var(--chart-8)",
-  "Investimentos": "var(--chart-1)",
-  "Outros": "var(--chart-2)",
-};
+/** @deprecated Use useCategories() para incluir categorias customizadas */
+export const CATEGORIES = DEFAULT_CATEGORIES;
 
 export type Expense = {
   id: string;
-  date: string; // ISO yyyy-mm-dd
+  date: string;
   description: string;
   category: Category;
   payment: string;
   amount: number;
 };
 
-export type Budgets = Partial<Record<Category, number>>;
+export type Budgets = Record<string, number>;
 
 export const DEFAULT_BUDGETS: Budgets = {
   "Alimentação": 800,
@@ -70,17 +51,9 @@ export const PAYMENT_METHODS = [
   "Boleto",
 ];
 
-export type IncomeCategory =
-  | "Salário"
-  | "Freelance"
-  | "Vendas"
-  | "Aluguel recebido"
-  | "Rendimentos"
-  | "Reembolso"
-  | "Presente"
-  | "Outros";
+export type IncomeCategory = string;
 
-export const INCOME_CATEGORIES: IncomeCategory[] = [
+export const DEFAULT_INCOME_CATEGORIES: IncomeCategory[] = [
   "Salário",
   "Freelance",
   "Vendas",
@@ -90,6 +63,9 @@ export const INCOME_CATEGORIES: IncomeCategory[] = [
   "Presente",
   "Outros",
 ];
+
+/** @deprecated Use useIncomeCategories() */
+export const INCOME_CATEGORIES = DEFAULT_INCOME_CATEGORIES;
 
 export type Income = {
   id: string;
