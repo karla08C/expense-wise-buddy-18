@@ -107,3 +107,36 @@ export function useIncomes() {
 
   return { incomes, add, remove, hydrated };
 }
+
+function useStringList(key: string, defaults: string[]) {
+  const [custom, setCustom] = useState<string[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setCustom(read<string[]>(key, []));
+    setHydrated(true);
+  }, [key]);
+
+  useEffect(() => {
+    if (hydrated) window.localStorage.setItem(key, JSON.stringify(custom));
+  }, [custom, hydrated, key]);
+
+  const all = Array.from(new Set([...defaults, ...custom]));
+  const add = (name: string) => {
+    const n = name.trim();
+    if (!n || all.includes(n)) return;
+    setCustom((p) => [...p, n]);
+  };
+  const remove = (name: string) => setCustom((p) => p.filter((c) => c !== name));
+  const isCustom = (name: string) => custom.includes(name);
+
+  return { all, custom, add, remove, isCustom };
+}
+
+export function useCategories() {
+  return useStringList(CUSTOM_CAT_KEY, DEFAULT_CATEGORIES);
+}
+
+export function useIncomeCategories() {
+  return useStringList(CUSTOM_INC_CAT_KEY, DEFAULT_INCOME_CATEGORIES);
+}
