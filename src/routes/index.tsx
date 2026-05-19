@@ -51,6 +51,12 @@ function Dashboard() {
   const yearExpenses = expenses.filter((e) => new Date(e.date).getFullYear() === year);
 
   const totalMonth = monthExpenses.reduce((s, e) => s + e.amount, 0);
+  const monthIncomes = incomes.filter((i) => {
+    const d = new Date(i.date);
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
+  const totalIncome = monthIncomes.reduce((s, i) => s + i.amount, 0);
+  const balance = totalIncome - totalMonth;
   const totalBudget = Object.values(budgets).reduce((s, v) => s + (v ?? 0), 0);
   const invested = monthExpenses.filter((e) => e.category === "Investimentos").reduce((s, e) => s + e.amount, 0);
   const lastMonthIdx = month === 0 ? 11 : month - 1;
@@ -78,11 +84,12 @@ function Dashboard() {
   const chartColors = ["chart-1","chart-2","chart-3","chart-4","chart-5","chart-6","chart-7","chart-8"];
 
   const stats = [
-    { label: "Gasto no mês", value: formatBRL(totalMonth), icon: Wallet, hint: `${monthLabel(month)} / ${year}` },
-    { label: "Orçamento total", value: formatBRL(totalBudget), icon: ListChecks, hint: `${((totalMonth / Math.max(totalBudget,1)) * 100).toFixed(0)}% usado` },
-    { label: "Investido no mês", value: formatBRL(invested), icon: PiggyBank, hint: "Categoria Investimentos" },
-    { label: "vs. mês anterior", value: `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}%`, icon: delta >= 0 ? ArrowUpRight : ArrowDownRight, hint: formatBRL(lastMonthTotal) },
+    { label: "Receitas do mês", value: formatBRL(totalIncome), icon: ArrowDownCircle, hint: `${monthLabel(month)} / ${year}` },
+    { label: "Gasto no mês", value: formatBRL(totalMonth), icon: Wallet, hint: `${((totalMonth / Math.max(totalBudget,1)) * 100).toFixed(0)}% do orçamento` },
+    { label: "Saldo do mês", value: formatBRL(balance), icon: Scale, hint: balance >= 0 ? "Sobrou" : "Negativo" },
+    { label: "Investido no mês", value: formatBRL(invested), icon: PiggyBank, hint: `vs. mês anterior ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}%` },
   ];
+  void ArrowUpRight; void ArrowDownRight; void ListChecks; void TrendingUp;
 
   if (!hydrated) return <AppShell><div className="p-8" /></AppShell>;
 
