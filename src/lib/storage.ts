@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Budgets, Expense, Income } from "./finance";
-import { DEFAULT_BUDGETS } from "./finance";
+import { DEFAULT_BUDGETS, DEFAULT_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from "./finance";
 
 const EXPENSES_KEY = "fc.expenses.v1";
 const BUDGETS_KEY = "fc.budgets.v1";
 const INCOMES_KEY = "fc.incomes.v1";
+const CUSTOM_CAT_KEY = "fc.customCategories.v1";
+const CUSTOM_INC_CAT_KEY = "fc.customIncomeCategories.v1";
 
 const seedIncomes: Income[] = [
   { id: "i1", date: "2025-05-05", description: "Salário mensal", category: "Salário", source: "Empresa", amount: 5200 },
