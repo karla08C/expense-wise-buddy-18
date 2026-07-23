@@ -1,142 +1,222 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./auth";
 import type { Budgets, Expense, Income } from "./finance";
 import { DEFAULT_BUDGETS, DEFAULT_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from "./finance";
 
-const EXPENSES_KEY = "fc.expenses.v1";
-const BUDGETS_KEY = "fc.budgets.v1";
-const INCOMES_KEY = "fc.incomes.v1";
-const CUSTOM_CAT_KEY = "fc.customCategories.v1";
-const CUSTOM_INC_CAT_KEY = "fc.customIncomeCategories.v1";
-
-const seedIncomes: Income[] = [
-  { id: "i1", date: "2025-05-05", description: "Salário mensal", category: "Salário", source: "Empresa", amount: 5200 },
-  { id: "i2", date: "2025-05-18", description: "Projeto freelance", category: "Freelance", source: "Cliente A", amount: 1500 },
-  { id: "i3", date: "2025-04-05", description: "Salário mensal", category: "Salário", source: "Empresa", amount: 5200 },
-];
-
-const seed: Expense[] = [
-  { id: "s1", date: "2025-05-02", description: "Supermercado Pão de Açúcar", category: "Alimentação", payment: "Cartão de Crédito", amount: 245.8 },
-  { id: "s2", date: "2025-05-03", description: "Uber para o trabalho", category: "Transporte", payment: "Pix", amount: 28.5 },
-  { id: "s3", date: "2025-05-05", description: "Aluguel", category: "Moradia", payment: "Transferência", amount: 1500 },
-  { id: "s4", date: "2025-05-07", description: "Cinema", category: "Lazer", payment: "Cartão de Débito", amount: 60 },
-  { id: "s5", date: "2025-05-10", description: "Farmácia", category: "Saúde", payment: "Dinheiro", amount: 75.3 },
-  { id: "s6", date: "2025-05-12", description: "Curso de inglês online", category: "Educação", payment: "Cartão de Crédito", amount: 199 },
-  { id: "s7", date: "2025-05-15", description: "Conta de luz", category: "Contas", payment: "Débito Automático", amount: 180.4 },
-  { id: "s8", date: "2025-05-18", description: "Aporte Tesouro Selic", category: "Investimentos", payment: "Transferência", amount: 500 },
-  { id: "s9", date: "2025-05-20", description: "Restaurante", category: "Alimentação", payment: "Cartão de Crédito", amount: 92.1 },
-  { id: "s10", date: "2025-05-25", description: "Combustível", category: "Transporte", payment: "Cartão de Débito", amount: 220 },
-  { id: "s11", date: "2025-04-04", description: "Mercado", category: "Alimentação", payment: "Pix", amount: 312 },
-  { id: "s12", date: "2025-04-05", description: "Aluguel", category: "Moradia", payment: "Transferência", amount: 1500 },
-  { id: "s13", date: "2025-04-15", description: "Internet", category: "Contas", payment: "Débito Automático", amount: 120 },
-  { id: "s14", date: "2025-04-22", description: "Aporte FIIs", category: "Investimentos", payment: "Transferência", amount: 400 },
-];
-
-function read<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const v = window.localStorage.getItem(key);
-    return v ? (JSON.parse(v) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export function useExpenses() {
+  const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(EXPENSES_KEY);
-    if (stored) setExpenses(JSON.parse(stored));
-    else {
-      setExpenses(seed);
-      window.localStorage.setItem(EXPENSES_KEY, JSON.stringify(seed));
+  const load = useCallback(async () => {
+    if (!user) {
+      setExpenses([]);
+      setHydrated(true);
+      return;
     }
+    const { data } = await supabase
+      .from("expenses")
+      .select("*")
+      .order("date", { ascending: false });
+    setExpenses(
+      (data ?? []).map((r) => ({
+        id: r.id,
+        date: r.date,
+        description: r.description,
+        category: r.category,
+        payment: r.payment,
+        amount: Number(r.amount),
+      })),
+    );
     setHydrated(true);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-  }, [expenses, hydrated]);
+    setHydrated(false);
+    load();
+  }, [load]);
 
-  const add = (e: Omit<Expense, "id">) =>
-    setExpenses((prev) => [{ ...e, id: crypto.randomUUID() }, ...prev]);
-  const remove = (id: string) => setExpenses((prev) => prev.filter((e) => e.id !== id));
-  const clear = () => setExpenses([]);
+  const add = async (e: Omit<Expense, "id">) => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("expenses")
+      .insert({ ...e, user_id: user.id })
+      .select()
+      .single();
+    if (data) {
+      setExpenses((prev) => [
+        { id: data.id, date: data.date, description: data.description, category: data.category, payment: data.payment, amount: Number(data.amount) },
+        ...prev,
+      ]);
+    }
+  };
+
+  const remove = async (id: string) => {
+    await supabase.from("expenses").delete().eq("id", id);
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
+  };
+
+  const clear = async () => {
+    if (!user) return;
+    await supabase.from("expenses").delete().eq("user_id", user.id);
+    setExpenses([]);
+  };
 
   return { expenses, add, remove, clear, hydrated };
 }
 
-export function useBudgets() {
-  const [budgets, setBudgets] = useState<Budgets>(DEFAULT_BUDGETS);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setBudgets(read(BUDGETS_KEY, DEFAULT_BUDGETS));
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(BUDGETS_KEY, JSON.stringify(budgets));
-  }, [budgets, hydrated]);
-
-  return { budgets, setBudgets };
-}
-
 export function useIncomes() {
+  const { user } = useAuth();
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(INCOMES_KEY);
-    if (stored) setIncomes(JSON.parse(stored));
-    else {
-      setIncomes(seedIncomes);
-      window.localStorage.setItem(INCOMES_KEY, JSON.stringify(seedIncomes));
+  const load = useCallback(async () => {
+    if (!user) {
+      setIncomes([]);
+      setHydrated(true);
+      return;
     }
+    const { data } = await supabase
+      .from("incomes")
+      .select("*")
+      .order("date", { ascending: false });
+    setIncomes(
+      (data ?? []).map((r) => ({
+        id: r.id,
+        date: r.date,
+        description: r.description,
+        category: r.category,
+        source: r.source ?? "",
+        amount: Number(r.amount),
+      })),
+    );
     setHydrated(true);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(INCOMES_KEY, JSON.stringify(incomes));
-  }, [incomes, hydrated]);
+    setHydrated(false);
+    load();
+  }, [load]);
 
-  const add = (i: Omit<Income, "id">) =>
-    setIncomes((prev) => [{ ...i, id: crypto.randomUUID() }, ...prev]);
-  const remove = (id: string) => setIncomes((prev) => prev.filter((i) => i.id !== id));
+  const add = async (i: Omit<Income, "id">) => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("incomes")
+      .insert({ ...i, user_id: user.id })
+      .select()
+      .single();
+    if (data) {
+      setIncomes((prev) => [
+        { id: data.id, date: data.date, description: data.description, category: data.category, source: data.source ?? "", amount: Number(data.amount) },
+        ...prev,
+      ]);
+    }
+  };
+
+  const remove = async (id: string) => {
+    await supabase.from("incomes").delete().eq("id", id);
+    setIncomes((prev) => prev.filter((i) => i.id !== id));
+  };
 
   return { incomes, add, remove, hydrated };
 }
 
-function useStringList(key: string, defaults: string[]) {
+export function useBudgets() {
+  const { user } = useAuth();
+  const [budgets, setBudgetsState] = useState<Budgets>(DEFAULT_BUDGETS);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(false);
+    (async () => {
+      if (!user) {
+        setBudgetsState(DEFAULT_BUDGETS);
+        setHydrated(true);
+        return;
+      }
+      const { data } = await supabase.from("budgets").select("*");
+      const map: Budgets = { ...DEFAULT_BUDGETS };
+      (data ?? []).forEach((r) => {
+        map[r.category] = Number(r.amount);
+      });
+      setBudgetsState(map);
+      setHydrated(true);
+    })();
+  }, [user]);
+
+  const setBudgets = (updater: Budgets | ((prev: Budgets) => Budgets)) => {
+    setBudgetsState((prev) => {
+      const next = typeof updater === "function" ? (updater as (p: Budgets) => Budgets)(prev) : updater;
+      if (user) {
+        // find changed keys
+        const rows = Object.entries(next)
+          .filter(([k, v]) => prev[k] !== v)
+          .map(([category, amount]) => ({ user_id: user.id, category, amount }));
+        if (rows.length > 0) {
+          void supabase.from("budgets").upsert(rows, { onConflict: "user_id,category" });
+        }
+      }
+      return next;
+    });
+  };
+
+  return { budgets, setBudgets, hydrated };
+}
+
+function useCustomCategoriesOfKind(kind: "expense" | "income", defaults: string[]) {
+  const { user } = useAuth();
   const [custom, setCustom] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setCustom(read<string[]>(key, []));
-    setHydrated(true);
-  }, [key]);
-
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(key, JSON.stringify(custom));
-  }, [custom, hydrated, key]);
+    setHydrated(false);
+    (async () => {
+      if (!user) {
+        setCustom([]);
+        setHydrated(true);
+        return;
+      }
+      const { data } = await supabase
+        .from("custom_categories")
+        .select("name")
+        .eq("kind", kind);
+      setCustom((data ?? []).map((r) => r.name));
+      setHydrated(true);
+    })();
+  }, [user, kind]);
 
   const all = Array.from(new Set([...defaults, ...custom]));
-  const add = (name: string) => {
+
+  const add = async (name: string) => {
     const n = name.trim();
-    if (!n || all.includes(n)) return;
-    setCustom((p) => [...p, n]);
+    if (!n || all.includes(n) || !user) return;
+    const { error } = await supabase
+      .from("custom_categories")
+      .insert({ user_id: user.id, kind, name: n });
+    if (!error) setCustom((p) => [...p, n]);
   };
-  const remove = (name: string) => setCustom((p) => p.filter((c) => c !== name));
+
+  const remove = async (name: string) => {
+    if (!user) return;
+    await supabase
+      .from("custom_categories")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("kind", kind)
+      .eq("name", name);
+    setCustom((p) => p.filter((c) => c !== name));
+  };
+
   const isCustom = (name: string) => custom.includes(name);
 
   return { all, custom, add, remove, isCustom };
 }
 
 export function useCategories() {
-  return useStringList(CUSTOM_CAT_KEY, DEFAULT_CATEGORIES);
+  return useCustomCategoriesOfKind("expense", DEFAULT_CATEGORIES);
 }
 
 export function useIncomeCategories() {
-  return useStringList(CUSTOM_INC_CAT_KEY, DEFAULT_INCOME_CATEGORIES);
+  return useCustomCategoriesOfKind("income", DEFAULT_INCOME_CATEGORIES);
 }
