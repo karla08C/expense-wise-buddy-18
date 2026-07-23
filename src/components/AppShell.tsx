@@ -1,6 +1,10 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowDownCircle, LayoutDashboard, Receipt, TrendingUp, Wallet } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { ArrowDownCircle, LayoutDashboard, LogOut, Receipt, TrendingUp, Wallet } from "lucide-react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -12,10 +16,32 @@ const nav = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/auth" });
+  }, [loading, user, navigate]);
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen grid place-items-center text-muted-foreground">
+        Carregando...
+      </div>
+    );
+  }
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
+
+  const displayName = (user.user_metadata?.full_name as string | undefined) || user.email || "";
+  const initial = (displayName[0] || "?").toUpperCase();
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row w-full bg-background">
-      <aside className="md:w-64 md:min-h-screen border-b md:border-b-0 md:border-r bg-card md:sticky md:top-0 md:h-screen">
+      <aside className="md:w-64 md:min-h-screen border-b md:border-b-0 md:border-r bg-card md:sticky md:top-0 md:h-screen flex flex-col">
         <div className="px-5 py-5 flex items-center gap-2">
           <div className="size-9 rounded-lg bg-primary text-primary-foreground grid place-items-center font-bold">F</div>
           <div>
@@ -23,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="text-xs text-muted-foreground">Despesas & Investimentos</div>
           </div>
         </div>
-        <nav className="px-2 pb-4 flex md:flex-col gap-1 overflow-x-auto">
+        <nav className="px-2 pb-4 flex md:flex-col gap-1 overflow-x-auto flex-1">
           {nav.map((item) => {
             const active = pathname === item.to;
             const Icon = item.icon;
@@ -44,6 +70,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+        <div className="hidden md:block border-t p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="size-8 rounded-full bg-primary text-primary-foreground grid place-items-center text-sm font-semibold">{initial}</div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium truncate">{displayName}</div>
+              <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" className="w-full" onClick={signOut}>
+            <LogOut className="size-4 mr-2" /> Sair
+          </Button>
+        </div>
       </aside>
       <main className="flex-1 min-w-0">{children}</main>
     </div>
