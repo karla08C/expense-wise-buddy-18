@@ -13,6 +13,10 @@ export const Route = createFileRoute("/investimentos")({
     meta: [
       { title: "Investimentos — FinControl" },
       { name: "description", content: "Guia educativo sobre investimentos financeiros e simulador de juros compostos." },
+      { property: "og:title", content: "Investimentos — FinControl" },
+      { property: "og:description", content: "Guia educativo sobre investimentos financeiros e simulador de juros compostos." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: InvestimentosPage,

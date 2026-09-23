@@ -12,6 +12,10 @@ export const Route = createFileRoute("/reset-password")({
     meta: [
       { title: "Redefinir senha — FinControl" },
       { name: "description", content: "Defina uma nova senha para sua conta FinControl." },
+      { property: "og:title", content: "Redefinir senha — FinControl" },
+      { property: "og:description", content: "Defina uma nova senha para sua conta FinControl." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ResetPasswordPage,

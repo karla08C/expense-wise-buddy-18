@@ -15,6 +15,10 @@ export const Route = createFileRoute("/despesas")({
     meta: [
       { title: "Despesas — FinControl" },
       { name: "description", content: "Cadastre e gerencie todas as suas despesas." },
+      { property: "og:title", content: "Despesas — FinControl" },
+      { property: "og:description", content: "Cadastre e gerencie todas as suas despesas." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: DespesasPage,
