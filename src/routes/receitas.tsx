@@ -14,6 +14,10 @@ export const Route = createFileRoute("/receitas")({
     meta: [
       { title: "Receitas — FinControl" },
       { name: "description", content: "Cadastre suas entradas: salário, freelance, rendimentos e mais." },
+      { property: "og:title", content: "Receitas — FinControl" },
+      { property: "og:description", content: "Cadastre suas entradas: salário, freelance, rendimentos e mais." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ReceitasPage,

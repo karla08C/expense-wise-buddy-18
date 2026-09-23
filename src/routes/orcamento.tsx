@@ -15,6 +15,10 @@ export const Route = createFileRoute("/orcamento")({
     meta: [
       { title: "Orçamento — FinControl" },
       { name: "description", content: "Defina e acompanhe seu orçamento mensal por categoria." },
+      { property: "og:title", content: "Orçamento — FinControl" },
+      { property: "og:description", content: "Defina e acompanhe seu orçamento mensal por categoria." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: OrcamentoPage,

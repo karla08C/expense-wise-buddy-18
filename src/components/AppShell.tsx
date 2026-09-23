@@ -1,6 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { ArrowDownCircle, LayoutDashboard, LogOut, Receipt, TrendingUp, Wallet } from "lucide-react";
+import { ArrowDownCircle, LayoutDashboard, LogOut, Receipt, TrendingUp, UserRound, Wallet } from "lucide-react";
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,11 +13,13 @@ const nav = [
   { to: "/despesas", label: "Despesas", icon: Receipt },
   { to: "/orcamento", label: "Orçamento", icon: Wallet },
   { to: "/investimentos", label: "Investimentos", icon: TrendingUp },
+  { to: "/perfil", label: "Perfil", icon: UserRound },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -32,6 +35,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   };
@@ -71,13 +76,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="hidden md:block border-t p-3">
-          <div className="flex items-center gap-2 mb-2">
+          <Link to="/perfil" className="mb-2 flex items-center gap-2 rounded-md p-1 transition-colors hover:bg-accent">
             <div className="size-8 rounded-full bg-primary text-primary-foreground grid place-items-center text-sm font-semibold">{initial}</div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium truncate">{displayName}</div>
               <div className="text-xs text-muted-foreground truncate">{user.email}</div>
             </div>
-          </div>
+          </Link>
           <Button variant="outline" size="sm" className="w-full" onClick={signOut}>
             <LogOut className="size-4 mr-2" /> Sair
           </Button>

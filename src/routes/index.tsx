@@ -25,6 +25,10 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Dashboard — FinControl" },
       { name: "description", content: "Visão geral de despesas, orçamento e investimentos." },
+      { property: "og:title", content: "Dashboard — FinControl" },
+      { property: "og:description", content: "Visão geral de despesas, orçamento e investimentos." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Dashboard,

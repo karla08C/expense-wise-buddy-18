@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReceitasRouteImport } from './routes/receitas'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as InvestimentosRouteImport } from './routes/investimentos'
 import { Route as DespesasRouteImport } from './routes/despesas'
@@ -25,6 +26,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ReceitasRoute = ReceitasRouteImport.update({
   id: '/receitas',
   path: '/receitas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrcamentoRoute = OrcamentoRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/despesas': typeof DespesasRoute
   '/investimentos': typeof InvestimentosRoute
   '/orcamento': typeof OrcamentoRoute
+  '/perfil': typeof PerfilRoute
   '/receitas': typeof ReceitasRoute
   '/reset-password': typeof ResetPasswordRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/despesas': typeof DespesasRoute
   '/investimentos': typeof InvestimentosRoute
   '/orcamento': typeof OrcamentoRoute
+  '/perfil': typeof PerfilRoute
   '/receitas': typeof ReceitasRoute
   '/reset-password': typeof ResetPasswordRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/despesas': typeof DespesasRoute
   '/investimentos': typeof InvestimentosRoute
   '/orcamento': typeof OrcamentoRoute
+  '/perfil': typeof PerfilRoute
   '/receitas': typeof ReceitasRoute
   '/reset-password': typeof ResetPasswordRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/despesas'
     | '/investimentos'
     | '/orcamento'
+    | '/perfil'
     | '/receitas'
     | '/reset-password'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/despesas'
     | '/investimentos'
     | '/orcamento'
+    | '/perfil'
     | '/receitas'
     | '/reset-password'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/despesas'
     | '/investimentos'
     | '/orcamento'
+    | '/perfil'
     | '/receitas'
     | '/reset-password'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   DespesasRoute: typeof DespesasRoute
   InvestimentosRoute: typeof InvestimentosRoute
   OrcamentoRoute: typeof OrcamentoRoute
+  PerfilRoute: typeof PerfilRoute
   ReceitasRoute: typeof ReceitasRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/receitas'
       fullPath: '/receitas'
       preLoaderRoute: typeof ReceitasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/orcamento': {
@@ -181,9 +201,20 @@ const rootRouteChildren: RootRouteChildren = {
   DespesasRoute: DespesasRoute,
   InvestimentosRoute: InvestimentosRoute,
   OrcamentoRoute: OrcamentoRoute,
+  PerfilRoute: PerfilRoute,
   ReceitasRoute: ReceitasRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
