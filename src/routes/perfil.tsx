@@ -1,11 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Mail, UserRound } from "lucide-react";
+import { Download, LogOut, Mail, UserRound } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useBudgets, useExpenses, useIncomes } from "@/lib/storage";
+import { csvDateStamp, downloadCsv } from "@/lib/csv";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -25,11 +27,55 @@ function ProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { expenses, hydrated: expensesReady } = useExpenses();
+  const { incomes, hydrated: incomesReady } = useIncomes();
+  const { budgets, hydrated: budgetsReady } = useBudgets();
 
   if (!user) return <AppShell><div className="p-8" /></AppShell>;
 
   const displayName = (user.user_metadata?.full_name as string | undefined) || "Usuário FinControl";
   const initial = (displayName[0] || "U").toUpperCase();
+  const investmentExpenses = expenses.filter((expense) => expense.category === "Investimentos");
+  const exportsReady = expensesReady && incomesReady && budgetsReady;
+
+  const exports = [
+    {
+      label: "Despesas",
+      detail: `${expenses.length} ${expenses.length === 1 ? "lançamento" : "lançamentos"}`,
+      download: () => downloadCsv(
+        `fincontrol-despesas-${csvDateStamp()}.csv`,
+        ["Data", "Descrição", "Categoria", "Forma de pagamento", "Valor (R$)"],
+        expenses.map((expense) => [expense.date, expense.description, expense.category, expense.payment, expense.amount.toFixed(2).replace(".", ",")]),
+      ),
+    },
+    {
+      label: "Receitas",
+      detail: `${incomes.length} ${incomes.length === 1 ? "lançamento" : "lançamentos"}`,
+      download: () => downloadCsv(
+        `fincontrol-receitas-${csvDateStamp()}.csv`,
+        ["Data", "Descrição", "Categoria", "Fonte", "Valor (R$)"],
+        incomes.map((income) => [income.date, income.description, income.category, income.source, income.amount.toFixed(2).replace(".", ",")]),
+      ),
+    },
+    {
+      label: "Orçamentos",
+      detail: `${Object.keys(budgets).length} categorias`,
+      download: () => downloadCsv(
+        `fincontrol-orcamentos-${csvDateStamp()}.csv`,
+        ["Categoria", "Limite mensal (R$)"],
+        Object.entries(budgets).map(([category, amount]) => [category, amount.toFixed(2).replace(".", ",")]),
+      ),
+    },
+    {
+      label: "Investimentos",
+      detail: `${investmentExpenses.length} ${investmentExpenses.length === 1 ? "lançamento" : "lançamentos"}`,
+      download: () => downloadCsv(
+        `fincontrol-investimentos-${csvDateStamp()}.csv`,
+        ["Data", "Descrição", "Categoria", "Forma de pagamento", "Valor investido (R$)"],
+        investmentExpenses.map((expense) => [expense.date, expense.description, expense.category, expense.payment, expense.amount.toFixed(2).replace(".", ",")]),
+      ),
+    },
+  ];
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -80,6 +126,28 @@ function ProfilePage() {
                 Sair da conta
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="max-w-2xl">
+          <CardHeader className="border-b">
+            <CardTitle className="text-lg">Exportar dados</CardTitle>
+            <p className="text-sm text-muted-foreground">Baixe seus registros em CSV para abrir no Excel ou em outros aplicativos.</p>
+          </CardHeader>
+          <CardContent className="divide-y pt-2">
+            {exports.map((item) => (
+              <div key={item.label} className="flex items-center justify-between gap-4 py-4">
+                <div className="min-w-0">
+                  <p className="font-medium">{item.label}</p>
+                  <p className="text-sm text-muted-foreground">{exportsReady ? item.detail : "Carregando dados..."}</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={item.download} disabled={!exportsReady} aria-label={`Exportar ${item.label} em CSV`}>
+                  <Download className="size-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Baixar CSV</span>
+                  <span className="sm:hidden">CSV</span>
+                </Button>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
